@@ -11,57 +11,46 @@ import random
 
 # 测试main文件的时候用
 import yaml
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument('--cfg', type=str, default='config.yaml')
-args = parser.parse_args()
-with open(args.cfg, "r", encoding="utf-8") as fd:
-  config = yaml.safe_load(fd)
 
-config['USER_ID'] = '\n'.join(config['USER_ID'])
-config['TEMPLATE_ID'] = '\n'.join(config['TEMPLATE_ID'])
+
+with open('config.yaml', "r", encoding="utf-8") as fd:
+  config = yaml.safe_load(fd)
+  print("已经打开config")
+
 
 if type(config['BIRTHDAY']) is list:
   config['BIRTHDAY'] = '\n'.join(config['BIRTHDAY'])
 else:
   config['BIRTHDAY'] = config['BIRTHDAY']
 
-env = {**os.environ, **config}
-os.environ = env
 
-tf = open("myDictionary.json", "r")
-nounExp = json.load(tf)
+
 
 nowtime = datetime.utcnow() + timedelta(hours=8)  # 东八区时间
 today = datetime.strptime(str(nowtime.date()), "%Y-%m-%d") #今天的日期
 
-start_date = os.getenv('START_DATE')
-city = os.getenv('CITY')
-birthday = os.getenv('BIRTHDAY')
+start_date = config['START_DATE']
+city = config['CITY']
+birthday = config['BIRTHDAY']
+app_id = config['APP_ID']
+app_secret = config['APP_SECRET']
+user_ids = config['USER_ID']
+template_ids = config['TEMPLATE_ID']
 
-app_id = os.getenv('APP_ID')
-app_secret = os.getenv('APP_SECRET')
-
-user_ids = os.getenv('USER_ID', '').split("\n")
-template_ids = os.getenv('TEMPLATE_ID', '').split("\n")
+tf = open("myDictionary.json", "r")
+nounExp = json.load(tf)
 
 if app_id is None or app_secret is None:
   print('请设置 APP_ID 和 APP_SECRET')
-  #exit(422)
+  exit(422)
 
 if not user_ids:
   print('请设置 USER_ID，若存在多个 ID 用回车分开')
-  #exit(422)
+  exit(422)
 
 if template_ids is None:
   print('请设置 TEMPLATE_ID')
-  #exit(422)
-
-if city is None:
-  city = "石家庄"
-
-if birthday is None:
-  birthday = "10-27"
+  exit(422)
 
 
 # weather 直接返回对象，在使用的地方用字段进行调用。
@@ -78,7 +67,6 @@ def get_weather():
     return None
   weather = res['data']['list'][0]
   return weather
-
 
 # 获取当前日期为星期几
 def get_week_day():
